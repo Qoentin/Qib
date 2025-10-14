@@ -1,0 +1,157 @@
+using Qib.Wrappers;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using OpenTK.Graphics.OpenGL4;
+using SixLabors.ImageSharp.Processing;
+using System.Runtime.InteropServices;
+using Qib.LIBRARY;
+using System.Diagnostics;
+
+namespace Qib.TEXTURES
+{
+    class STex
+    {
+        public int Handle;
+        public long BHandle;
+        
+
+        int PixelBufferHandle;
+        IntPtr PixelBufferPtr;
+
+        public bool ReadyForGPU = false;
+
+        private int Width, Height;
+        private string Path;
+
+        public STex(string Path, int Width, int Height) {
+            this.Path = Path;
+            this.Width = Width;
+            this.Height = Height;
+
+            PixelBufferHandle = GL.GenBuffer();
+
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, PixelBufferHandle);
+
+            GL.BufferData(BufferTarget.PixelUnpackBuffer, 4 * Width * Height, IntPtr.Zero, BufferUsageHint.StaticDraw);
+            PixelBufferPtr = GL.MapBuffer(BufferTarget.PixelUnpackBuffer, BufferAccess.WriteOnly);
+
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
+        }
+
+        private STex(bool Bindless) {
+            Handle = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+
+            if ( Bindless ) {
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorderArb);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorderArb);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, new float[4]);
+            }
+            else {
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
+            }
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.Rgba,
+                Width,
+                Height,
+                0,
+                PixelFormat.Rgba,
+                PixelType.UnsignedByte,
+                [0,0,0,0]
+            );
+
+            GL.BindTexture(TextureTarget.Texture2D, 0);
+
+            if ( Bindless ) {
+                BHandle = GL.Arb.GetTextureHandle(Handle);
+                GL.Arb.MakeTextureHandleResident(BHandle);
+            }
+        }
+
+        public void LoadCPU() { //LOAD THREAD
+            Image<Rgba32> Img = Image.Load<Rgba32>(Path);
+            Img.Mutate(X => X.Flip(FlipMode.Vertical));
+            byte[] PixelData = new byte[4*Width*Height];
+            Img.CopyPixelDataTo(PixelData);
+            Img.Dispose();
+
+            Marshal.Copy(PixelData, 0, PixelBufferPtr, PixelData.Length);
+
+            ReadyForGPU = true;
+        }
+
+        public bool LoadGPU() { //MAIN THREAD
+            var CWT = Stopwatch.GetTimestamp();
+
+            bool Bindless = true;
+
+            if ( !ReadyForGPU ) return false;
+
+            Handle = GL.GenTexture();
+
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, PixelBufferHandle); //!
+            GL.UnmapBuffer(BufferTarget.PixelUnpackBuffer);
+
+            if (Bindless) {
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorderArb);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorderArb);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, new float[4]);
+            }
+            else {
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
+            }
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+
+            GL.TexImage2D(
+                TextureTarget.Texture2D,
+                0,
+                PixelInternalFormat.CompressedRgba,
+                Width,
+                Height,
+                0,
+                PixelFormat.Rgba,
+                PixelType.UnsignedByte,
+                0
+            );
+
+            GL.DeleteBuffer(PixelBufferHandle);
+
+            GL.BindTexture(TextureTarget.Texture2D, 0);
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
+
+            if (Bindless) {
+                BHandle = GL.Arb.GetTextureHandle(Handle);
+                GL.Arb.MakeTextureHandleResident(BHandle);
+            }
+            var CWTE = Stopwatch.GetElapsedTime(CWT).TotalMilliseconds;
+            PrintL($"Texcreation {CWTE}ms");
+            return true;
+        }
+
+        public void Delete() {
+            GL.Arb.MakeTextureHandleNonResident(BHandle);
+            GL.DeleteTexture(Handle);
+        }
+
+        public static STex NST = null, NSTB = null;
+
+        public static STex Null { get => NST ?? (NST = new(false)); }
+
+        public static STex NullB { get => NSTB ?? (NSTB = new(true)); }
+    }
+}
