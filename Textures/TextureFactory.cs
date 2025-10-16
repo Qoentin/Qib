@@ -1,12 +1,6 @@
-﻿using Qib.LIBRARY;
-using Qib.Objects.Display.DisplayStrategies;
-using SixLabors.ImageSharp;
-using System;
+﻿using Qib.Helpers;
+using Qib.LIBRARY;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Qib.TEXTURES
 {
@@ -51,12 +45,12 @@ namespace Qib.TEXTURES
         }
 
         public static Texture ManufactureFromPath(string Path, bool Await = false) {
-            var ImageInfo = Image.Identify(Path);
+            var ImageDimensions = ImageHelper.GetImageDimensions(Path);
 
             Texture Tex = new(
                     ref Path,
-                    ImageInfo.Width,
-                    ImageInfo.Height
+                    ImageDimensions.Width,
+                    ImageDimensions.Height
             );
 
             if (Await) {

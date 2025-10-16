@@ -1,12 +1,7 @@
-﻿using Qib.TEXTURES;
+﻿using Qib.Helpers;
+using Qib.TEXTURES;
 using Qib.Video;
-using SixLabors.ImageSharp;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Qib.LIBRARY
 {
@@ -57,13 +52,12 @@ namespace Qib.LIBRARY
             return L;
         }
 
-        public static (int, int) AutoGetDimensions( (MediaType, string) MediaInfo ) {
-            switch ( MediaInfo.Item1 ) {
+        public static (int Width, int Height) AutoGetDimensions( (MediaType Type, string Path) MediaInfo ) {
+            switch ( MediaInfo.Type ) {
                 case MediaType.Image:
-                    var ImageInfo = Image.Identify(MediaInfo.Item2);
-                    return (ImageInfo.Width, ImageInfo.Height);
+                    return ImageHelper.GetImageDimensions(MediaInfo.Path);
                 case MediaType.Video:
-                    return VideoThumbnailFactory.IdentifyDimensions(MediaInfo.Item2);
+                    return VideoThumbnailFactory.GetVideoDimensions(MediaInfo.Path);
                 default:
                     throw new Exception("Meep");
             }

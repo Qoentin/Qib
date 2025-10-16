@@ -8,14 +8,11 @@ using Qib.OBJECTS;
 using Qib.CAMERA;
 using Qib.LIBRARY;
 using Object = Qib.CONSTITUANTS.Object;
-using static OpenTK.Windowing.GraphicsLibraryFramework.Keys;
-using SixLabors.ImageSharp;
 using Qib.Objects.Display;
 using Qib.Objects.Display.DisplayStrategies;
 using Qib.Video;
 using Qib.Effects;
 using Qib.Objects;
-using Qib.TEXTURES;
 
 namespace Qib
 {
@@ -40,7 +37,7 @@ namespace Qib
             BI.Effects<FollowMouse>().SetStrength(0.1f).AdjustScale();
             Objects.Add(BI);
 
-            Display TD = new(L, new Masonry() { ColumnCount = 16, XPadding = 0f, FrameWidth = Window.Selected.AspectRatio }, -8);
+            Display TD = new(L, new Masonry() { ColumnCount = 4, XPadding = 0f, FrameWidth = Window.Selected.AspectRatio }, -8);
             TD.AddEffect(new ElasticScroll());
             TD.RefreshLayout();
             Objects.Add(TD);

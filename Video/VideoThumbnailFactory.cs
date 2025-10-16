@@ -1,9 +1,5 @@
 ﻿using FFmpeg.AutoGen;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp;
 using static FFmpeg.AutoGen.ffmpeg;
-using System.Runtime.InteropServices;
-using System.Numerics;
 using OpenTK.Mathematics;
 using Vector3 = OpenTK.Mathematics.Vector3;
 
@@ -37,7 +33,7 @@ namespace Qib.Video
             FFmpegReady = true;
         }
 
-        public static (int, int) IdentifyDimensions(string VideoPath) {
+        public static (int, int) GetVideoDimensions(string VideoPath) {
             if ( !FFmpegReady ) throw new Exception("FNR");
 
             var FmtContext = avformat_alloc_context();

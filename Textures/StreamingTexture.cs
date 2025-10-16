@@ -1,18 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using Qib.LIBRARY;
 using Qib.Video;
-using SixLabors.ImageSharp.PixelFormats;
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp;
 using SkiaSharp;
-using FFmpeg.AutoGen;
 
 namespace Qib.TEXTURES
 {
@@ -79,17 +68,15 @@ namespace Qib.TEXTURES
             if ( PixelBufferPtr == 0 ) return;
 
             SKBitmap Bitmap = SKBitmap.Decode(ImageCodec, new(ImageLoadSize.Width, ImageLoadSize.Height));
-#pragma warning disable
+            #pragma warning disable
             SKBitmap RSB = Bitmap.Resize(new SKSizeI(Width, Height), SKFilterQuality.Low);
-            Console.WriteLine($"Hello rsb: Held bytes {Bytes}, Written bytes {RSB.ByteCount}");
             RSB.GetPixelSpan().CopyTo(new Span<byte>((void*)PixelBufferPtr, Bytes));
             
+            //Todo: Write directly to gpu surface
+
             RSB.Dispose();
-
             Bitmap.Dispose();
-
             ImageCodec.Dispose();
-
 
             ReadyForGPU = true;
         }

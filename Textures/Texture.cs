@@ -1,15 +1,11 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using Qib.LIBRARY;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SixLabors.ImageSharp.Processing;
 using Qib.OPENGL;
 using SkiaSharp;
 
@@ -17,20 +13,6 @@ namespace Qib.TEXTURES
 {
     class Texture
     {
-        #region Decoder Options
-        public static DecoderOptions DecoderOptions = GDO();
-        private static DecoderOptions GDO() {
-            Configuration C = Configuration.Default.Clone();
-            C.PreferContiguousImageBuffers = true;
-
-            return new DecoderOptions()
-            {
-                Configuration = C,
-                SkipMetadata = true
-            };
-        }
-        #endregion
-
         public int Handle;
 
         public int PixelBufferHandle;
@@ -73,22 +55,10 @@ namespace Qib.TEXTURES
 
             SKBitmap Bitmap = SKBitmap.Decode(Codec, new(LoadSize.Width, LoadSize.Height)); 
             #pragma warning disable
-            if ( LoadSize.Width != Codec.Info.Width ) Bitmap.Resize(new SKSizeI(Width, Height), SKFilterQuality.Low);
+            SKBitmap RSB = Bitmap.Resize(new SKSizeI(Width, Height), SKFilterQuality.Low);
+            RSB.GetPixelSpan().CopyTo(new Span<byte>((void*)PixelBufferPtr, Bytes));
 
-            Bitmap.GetPixelSpan().CopyTo(new Span<byte>((void*)PixelBufferPtr, Bitmap.ByteCount));
-
-            //Image<Rgba32> Img = Image.Load<Rgba32>(DecoderOptions, Path);
-            //Img.Mutate(X => X.Flip(FlipMode.Vertical).Resize(Width, Height));
-
-            //if ( !Img.DangerousTryGetSinglePixelMemory(out var PixelData) )
-            //    throw new Exception("Blep");
-
-            //using ( MemoryHandle PixelDataH = PixelData.Pin() ) {
-            //    System.Buffer.MemoryCopy(PixelDataH.Pointer, (void*)PixelBufferPtr, Bytes, Bytes);
-            //}
-
-            //Img.Dispose();
-
+            RSB.Dispose();
             Bitmap.Dispose();
             Codec.Dispose();
 
