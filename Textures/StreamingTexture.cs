@@ -146,7 +146,7 @@ namespace Qib.TEXTURES
 
         private (PixelInternalFormat, PixelFormat) AutoGetFormats() {
             switch (MediaType) {
-                case MediaType.Image: return (PixelInternalFormat.CompressedRgba, PixelFormat.Rgba);
+                case MediaType.Image: return (PixelInternalFormat.CompressedRgba, PixelFormat.Bgra);
                 case MediaType.Video: return (PixelInternalFormat.CompressedRgb, PixelFormat.Rgb);
                 default: throw new Exception("Poop");
             }

@@ -72,8 +72,9 @@ namespace Qib.Video
             int YBorder = (Height % THeight == 0) ? 0 : Scale;
             int To = 0;
 
-            for ( int y = Height - YBorder - 1; y >= 0; y -= Scale ) {
-                byte* LumaLine = (Frame->data[0] + y * Frame->linesize[0]);
+            //for ( int y = Height - YBorder - 1; y >= 0; y -= Scale ) {
+            for ( int y = 0; y < Height - YBorder; y += Scale ) {
+                    byte* LumaLine = (Frame->data[0] + y * Frame->linesize[0]);
                 byte* ChromaULine = (Frame->data[1] + (y / 2) * Frame->linesize[1]);
                 byte* ChromaVLine = (Frame->data[2] + (y / 2) * Frame->linesize[2]);
 

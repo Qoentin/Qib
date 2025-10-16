@@ -14,6 +14,6 @@ void main() {
 
 	gl_Position = vec4(_,1) * MVP;
 
-	FragmentUV = VertexUV;
+	FragmentUV = vec2(VertexUV.x, 1-VertexUV.y);
 	InstID = gl_InstanceID;
 }

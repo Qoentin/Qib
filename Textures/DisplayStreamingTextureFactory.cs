@@ -4,7 +4,7 @@ using Qib.OPENGL;
 using Qib.TEXTURES;
 using System.Collections.Concurrent;
 
-namespace Qib.Objects.Display 
+namespace Qib.Textures 
 {
     class DisplayStreamingTextureFactory 
     {

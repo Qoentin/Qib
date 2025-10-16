@@ -9,6 +9,7 @@ using Qib.LIBRARY;
 using Qib.Objects.Display.DisplayStrategies;
 using Qib.TEXTURES;
 using Qib.IO;
+using Qib.Textures;
 
 namespace Qib.Objects.Display
 {
