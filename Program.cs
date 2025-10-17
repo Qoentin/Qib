@@ -22,7 +22,7 @@ namespace Qib
 
         static void Main(string[] args)
         {
-            VideoThumbnailFactory.Init(@"C:\FFmpeg DLLs");
+            AnonymousVideo.InitFFmpeg(@"C:\FFmpeg DLLs");
 
             Window MainWindow = GLFW.CreateWindow("Test", 240, 135, 1440, 810);
             Camera MainCamera = new(MainWindow, ProjectionType.Perspective);
@@ -30,7 +30,8 @@ namespace Qib
 
             //Safe 🔽
 
-            Library L = LibraryLoader.Load(@"C:\Users\quent\Desktop\Morbius.2022.1080p.WEBRip.x264-RARBG\02-N");
+            //Library L = LibraryLoader.Load(@"C:\Users\quent\Videos"); 
+            Library L = LibraryLoader.Load(@"C:\Users\quent\Desktop\Morbius.2022.1080p.WEBRip.x264-RARBG\02-N"); 
             // Loading library takes time and blocks
 
             BackgroundImage BI = new(MainWindow, MainCamera, TextureFactory.ManufactureFromPath(@"C:\Users\quent\Desktop\GrW6Iq0bUAAfXVp.jfif", Await: true), -16);
@@ -58,8 +59,8 @@ namespace Qib
                     int i = TD.GetHoveredItemIndex();
                     if ( i == -1 ) return;
 
-                    //PrintL(i);
-                    //V.Set(i);
+                    PrintL(L[i].Path);
+                    V.Set(i);
                     L[i].Tags.Add(R.Next().ToString());
                 }
                 if ( Input.IsButtonClicked(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Right) ) {

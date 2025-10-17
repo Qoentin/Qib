@@ -31,8 +31,9 @@ namespace Qib.LIBRARY
         }
 
         public static Library Load(string FromPath) {
-            var TriagedPaths = Triage.Media(Directory.GetFiles(FromPath, "*", SearchOption.TopDirectoryOnly)).Take(1000).ToArray();
-
+            var TriagedPaths = Triage.Media(Directory.GetFiles(FromPath, "*", SearchOption.TopDirectoryOnly)).Skip(0).Take(555)
+               .ToArray();
+            // .Where((e,i) => (new int[] { 1, 58, 91, 156, 279, 285, 300 }).Contains(i)  )
             Library L = new(TriagedPaths.Length);
 
             Task.Run(() => {
@@ -57,7 +58,7 @@ namespace Qib.LIBRARY
                 case MediaType.Image:
                     return ImageHelper.GetImageDimensions(MediaInfo.Path);
                 case MediaType.Video:
-                    return VideoThumbnailFactory.GetVideoDimensions(MediaInfo.Path);
+                    return AnonymousVideo.GetVideoDimensions(MediaInfo.Path);
                 default:
                     throw new Exception("Meep");
             }

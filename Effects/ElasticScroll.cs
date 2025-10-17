@@ -15,7 +15,7 @@ namespace Qib.Effects
         public float FalloffTimes = 1;
 
         public void Update() {
-            Accel += Input.GetScrollDeltaY(0.4f);
+            Accel += Input.GetScrollDeltaY(1f);
 
             if ( Accel == 0 ) return;
 
