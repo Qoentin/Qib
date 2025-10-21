@@ -2,7 +2,7 @@
 using System.Runtime.Intrinsics;
 
 
-namespace Qib.Video
+namespace Qib.VIDEO
 {
     public static unsafe class AVFrameDecoder
     {

@@ -1,6 +1,6 @@
 ﻿using Qib.Helpers;
 using Qib.TEXTURES;
-using Qib.Video;
+using Qib.VIDEO;
 using System.Collections.Concurrent;
 
 namespace Qib.LIBRARY
@@ -31,9 +31,8 @@ namespace Qib.LIBRARY
         }
 
         public static Library Load(string FromPath) {
-            var TriagedPaths = Triage.Media(Directory.GetFiles(FromPath, "*", SearchOption.TopDirectoryOnly)).Skip(0).Take(555)
+            var TriagedPaths = Triage.Videos(Directory.GetFiles(FromPath, "*", SearchOption.AllDirectories)).Skip(0).Take(20)
                .ToArray();
-            // .Where((e,i) => (new int[] { 1, 58, 91, 156, 279, 285, 300 }).Contains(i)  )
             Library L = new(TriagedPaths.Length);
 
             Task.Run(() => {

@@ -7,7 +7,7 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.Arm;
 
 
-namespace Qib.Video
+namespace Qib.VIDEO
 {
     unsafe static class VideoThumbnailFactory
     {

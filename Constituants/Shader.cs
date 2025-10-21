@@ -70,8 +70,8 @@ namespace Qib.CONSTITUANTS
 
         public static Shader Null() {
             return NullShader ?? (NullShader = new(
-                    @"C:\Users\quent\source\repos\Qib\GLSL\Null\NullVertex.glsl",
-                    @"C:\Users\quent\source\repos\Qib\GLSL\Null\NullFragment.glsl"
+                    @"C:\Users\quent\source\repos\Qib\GLSL\Null\Null.vert.glsl",
+                    @"C:\Users\quent\source\repos\Qib\GLSL\Null\Null.frag.glsl"
             ));
         }
 
@@ -79,8 +79,8 @@ namespace Qib.CONSTITUANTS
 
         public static Shader NullInstanced() {
             return NullInstancedShader ?? (NullInstancedShader = new(
-                    @"C:\Users\quent\source\repos\Qib\GLSL\NullInstanced\NullVertex.inst.glsl",
-                    @"C:\Users\quent\source\repos\Qib\GLSL\Null\NullFragment.glsl"
+                    @"C:\Users\quent\source\repos\Qib\GLSL\NullInstanced\Null.vert.inst.glsl",
+                    @"C:\Users\quent\source\repos\Qib\GLSL\Null\Null.frag.glsl"
             ));
         }
 

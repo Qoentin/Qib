@@ -1,11 +1,11 @@
 ﻿using OpenTK.Mathematics;
 using Qib.CONSTITUANTS;
 using Qib.LIBRARY;
-using Qib.OPENGL;
 using Qib.TEXTURES;
-using Qib.TEXTURES;
-using Qib.Wrappers;
+using Qib.VIDEO;
 using Object = Qib.CONSTITUANTS.Object;
+using OpenTK.Graphics.OpenGL4;
+using System.Reflection.Metadata;
 
 
 namespace Qib.Objects
@@ -13,6 +13,12 @@ namespace Qib.Objects
     class Viewer : Object
     {
         Library L;
+        int Selected = -1;
+
+        Video SelectedVideo;
+        public VIdeoStreamingPenis VSP;
+        int ActiveFrame;
+        IntPtr ActiveFramePtr;
 
         public Viewer( Library L, float Z ) :
             base(
@@ -25,19 +31,55 @@ namespace Qib.Objects
             ) 
         {
             this.L = L;
+
+            //ActiveFrame = GL.GenBuffer();
+            //GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ActiveFrame);
+            //GL.BufferStorage(
+            //    BufferTarget.ShaderStorageBuffer,
+            //    sizeof(long),
+            //    nint.Zero,
+            //    BufferStorageFlags.MapWriteBit | BufferStorageFlags.MapCoherentBit | BufferStorageFlags.MapPersistentBit
+            //);
+            //GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, ActiveFrame);
+            //ActiveFramePtr = GL.MapBuffer(BufferTarget.ShaderStorageBuffer, BufferAccess.WriteOnly);
+        }
+
+        private void SetImage() {
+            //Texture = TextureFactory.ManufactureFromLibary(L, Selected);
+            Transform.Scale = new Vector3(L.AspectOfElement(Selected), 1, 0);
+        }
+
+        private void SetVideo() {
+            SelectedVideo = new(L[Selected].Path);
+
+            VSP = new VIdeoStreamingPenis(L[Selected].Width, L[Selected].Height);
+
+            Transform.Scale = new Vector3(L.AspectOfElement(Selected), 1, 0) * 0.8f;
+        }
+
+        public unsafe void DEBUGONE() {
+            UniformUpload = () => {
+                GL.BindTexture(TextureTarget.Texture2D, VSP.Handle);
+            };
+        }
+
+        public unsafe void DEBUGTWO() {
+            //VSP.Draw();
+            VSP.Upload();
         }
 
         public void Set(int FromIndex) {
-            if ( L[FromIndex].Type != MediaType.Image ) return;
-
             if ( FromIndex == -1 ) return;
 
             Texture.Delete();
 
-            Texture = TextureFactory.ManufactureFromLibary(L, FromIndex);
+            Selected = FromIndex;
 
-            Transform.Scale = new Vector3(L.AspectOfElement(FromIndex), 1, 0);
-            Console.WriteLine(Transform.Scale.Value);
+            switch (L[Selected].Type) {
+                //case MediaType.Image: SetImage(); break;
+                case MediaType.Video: SetVideo(); break;
+                default: break;
+            }
         }
     }
 }

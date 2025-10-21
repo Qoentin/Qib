@@ -30,8 +30,8 @@ namespace Qib.Objects.Display
                 ),
                 MeshFactory.Plane2(1),
                 new(
-                    @"C:\Users\quent\source\repos\Qib\GLSL\Masonry\MasonryVertex.inst.glsl",
-                    @"C:\Users\quent\source\repos\Qib\GLSL\Masonry\MasonryFragmentTexture.inst.glsl"
+                    @"C:\Users\quent\source\repos\Qib\GLSL\Masonry\Masonry.vert.inst.glsl",
+                    @"C:\Users\quent\source\repos\Qib\GLSL\Masonry\Masonry.frag.inst.glsl"
                 ),
                 NullTexture2.Get()
             ) {

@@ -1,7 +1,7 @@
 ﻿using FFmpeg.AutoGen;
 using static FFmpeg.AutoGen.ffmpeg;
 
-namespace Qib.Video
+namespace Qib.VIDEO
 {
     public static unsafe class AnonymousVideo
     {

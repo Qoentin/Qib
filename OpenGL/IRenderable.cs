@@ -3,7 +3,6 @@ using OpenTK.Mathematics;
 using Qib.CAMERA;
 using Qib.CONSTITUANTS;
 using Qib.TEXTURES;
-using Qib.TEXTURES;
 using Qib.Wrappers;
 
 namespace Qib.OPENGL

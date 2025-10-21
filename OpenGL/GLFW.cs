@@ -78,8 +78,8 @@ namespace Qib.OPENGL
         public static void Wait() {
             //Does not ensure initialization because this is called AMAP
             //Does not crash if not initialized sooo its ok ig
-            External.GLFW.WaitEvents();
-            //External.GLFW.PollEvents();
+            //External.GLFW.WaitEvents();
+            External.GLFW.PollEvents();
         }
     }
 }

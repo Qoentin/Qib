@@ -6,27 +6,31 @@ namespace Qib.IO
 {
     public static partial class Input {
         private static class Keyboard {
-            public static Dictionary<Keys, bool> Map = InitializeMap();
+            public static Dictionary<Keys, sbyte> Map = InitializeMap();
 
-            private static Dictionary<Keys, bool> InitializeMap() {
-                Dictionary<Keys, bool> Map = new();
+            private static Dictionary<Keys, sbyte> InitializeMap() {
+                Dictionary<Keys, sbyte> Map = new();
 
                 foreach (Keys Key in Enum.GetValues(typeof(Keys))) {
-                    Map.TryAdd(Key, false);
+                    Map.TryAdd(Key, -1);
                 }
 
                 return Map;
             }
 
             unsafe public static GLFWCallbacks.KeyCallback Callback = ( Window, Key, Scancode, Action, Mods ) => {
-                Keyboard.Map[Key] = (Action >= InputAction.Press);
+                Keyboard.Map[Key] = (sbyte)Action;
             };
         }
 
         public static GLFWCallbacks.KeyCallback GetKeyboardCallback() => Keyboard.Callback;
 
         public static bool IsKeyDown( Keys Key ) {
-            return Keyboard.Map[Key];
+            return Keyboard.Map[Key] >= (sbyte)InputAction.Press;
+        }
+
+        public static bool IsKeyClicked( Keys Key ) {
+            return Keyboard.Map[Key] == (sbyte)InputAction.Press;
         }
 
         public static Vector3 WASD(float Factor = 1) {

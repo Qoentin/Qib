@@ -1,5 +1,4 @@
 ﻿global using static Qib.Wrappers.DebugTools;
-global using static Qib.Extensions.CollectionExtensions;
 using Qib.IO;
 using Qib.OPENGL;
 using Qib.TEXTURES;
@@ -10,9 +9,13 @@ using Qib.LIBRARY;
 using Object = Qib.CONSTITUANTS.Object;
 using Qib.Objects.Display;
 using Qib.Objects.Display.DisplayStrategies;
-using Qib.Video;
+using Qib.VIDEO;
 using Qib.Effects;
 using Qib.Objects;
+using static OpenTK.Windowing.GraphicsLibraryFramework.Keys;
+using OpenTK.Graphics.OpenGL4;
+using Qib.CONSTITUANTS;
+using OpenTK.Mathematics;
 
 namespace Qib
 {
@@ -30,8 +33,8 @@ namespace Qib
 
             //Safe 🔽
 
-            //Library L = LibraryLoader.Load(@"C:\Users\quent\Videos"); 
-            Library L = LibraryLoader.Load(@"C:\Users\quent\Desktop\Morbius.2022.1080p.WEBRip.x264-RARBG\02-N"); 
+            Library L = LibraryLoader.Load(@"C:\Users\quent\Desktop"); 
+            //Library L = LibraryLoader.Load(@"C:\Users\quent\Desktop\Morbius.2022.1080p.WEBRip.x264-RARBG\02-N"); 
             // Loading library takes time and blocks
 
             BackgroundImage BI = new(MainWindow, MainCamera, TextureFactory.ManufactureFromPath(@"C:\Users\quent\Desktop\GrW6Iq0bUAAfXVp.jfif", Await: true), -16);
@@ -44,16 +47,29 @@ namespace Qib
             Objects.Add(TD);
 
             Viewer V = new(L, -4);
+            V.Transform.Scale = new Vector3(1.7777f, 1, 0) * 0.8f;
+
             Objects.Add(V);
 
             Random R = new();
 
+            VideoTimeline VT = null;
+
             while (!GLFW.ShouldClose()) {
                 MainRenderer.Clear();
 
+                if ( Input.IsKeyDown(Space) )
+                    V.DEBUGONE();
 
-                //if ( Input.IsKeyDown(Space) )
-                //    ;
+                if ( Input.IsKeyClicked(M)) {
+                    V.DEBUGTWO();
+                    Console.WriteLine($"Draw Avg {V.VSP.DrawTS / V.VSP.DrawTC}, Up Avg {V.VSP.UpTS / V.VSP.UpTC}");
+
+                }
+
+                if ( Input.IsKeyClicked(P) ) ;
+                //V.DEBUGTHREE();
+
 
                 if ( Input.IsButtonClicked(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Left) ) {
                     int i = TD.GetHoveredItemIndex();
@@ -64,11 +80,19 @@ namespace Qib
                     L[i].Tags.Add(R.Next().ToString());
                 }
                 if ( Input.IsButtonClicked(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Right) ) {
-                    int i = TD.GetHoveredItemIndex();
-                    if ( i == -1 ) return;
-                    //PrintL(i);
-                    //V.Set(i);
-                    L[i].Tags.Print();
+                    VT = new VideoTimeline(L[TD.GetHoveredItemIndex()].Path);
+                    V.UniformUpload = () => {
+                        GL.BindTexture(TextureTarget.Texture2D, VT.VT.Handle);
+                    };
+                    //int i = TD.GetHoveredItemIndex();
+                    //if ( i == -1 ) return;
+                    ////PrintL(i);
+                    ////V.Set(i);
+                    //L[i].Tags.Print();
+                }
+
+                if (VT is not null) {
+                    VT.PollAndFire();
                 }
 
                 foreach (Object Obj in Objects) {

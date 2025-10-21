@@ -1,14 +1,12 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using Qib.LIBRARY;
-using Qib.Video;
+using Qib.VIDEO;
 using SkiaSharp;
 
 namespace Qib.TEXTURES
 {
     class StreamingTexture
     {
-        
-
         public int Index;
         public int Handle;
         public long BHandle;

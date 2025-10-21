@@ -5,7 +5,7 @@ using System.Runtime.Intrinsics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Qib.Video
+namespace Qib.VIDEO
 {
     public static class BT709
     {
