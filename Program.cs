@@ -69,7 +69,7 @@ namespace Qib
 
             Random R = new();
 
-            FINALAUDIOISWEAR VT = null;
+            FINALAUDIOISWEAR VT;
 
             while (!GLFW.ShouldClose()) {
                 MainRenderer.Clear();
@@ -88,12 +88,12 @@ namespace Qib
 
 
                 if ( Input.IsButtonClicked(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Left) ) {
-                    int i = TD.GetHoveredItemIndex();
-                    if ( i == -1 ) return;
+                    //int i = TD.GetHoveredItemIndex();
+                    //if ( i == -1 ) return;
 
-                    PrintL(L[i].Path);
+                    //PrintL(L[i].Path);
                     //V.Set(i);
-                    L[i].Tags.Add(R.Next().ToString());
+                    //L[i].Tags.Add(R.Next().ToString());
                 }
                 if ( Input.IsButtonClicked(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Right) ) {
                     VT = new FINALAUDIOISWEAR(L[TD.GetHoveredItemIndex()].Path, 5);
@@ -107,9 +107,9 @@ namespace Qib
                     //L[i].Tags.Print();
                 }
 
-                if (VT is not null) {
-                    //VT.PollAndFire();
-                }
+                //if (VT is not null) {
+                //    //VT.PollAndFire();
+                //}
 
                 foreach (Object Obj in Objects) {
                     Obj.UpdateEffects();
