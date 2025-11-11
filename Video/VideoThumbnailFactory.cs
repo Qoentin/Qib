@@ -31,8 +31,8 @@ namespace Qib.VIDEO
                 StreamIndex
             );
 
-            AVFrameDecoder.WriteYUVasRGBtoWriteLocation_Vec128(
-                (byte*)WriteLocation, //new((void*)WriteLocation, 3 * TWidth * THeight)
+            AVFrameDecoder.WriteYUVasRGBtoWriteLocation_Safe(
+               new((void*)WriteLocation, 3 * TWidth * THeight),
                 OutFrame,
                 TWidth,
                 THeight

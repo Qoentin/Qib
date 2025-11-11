@@ -12,7 +12,6 @@
   <ItemGroup>
     <PackageReference Include="FFmpeg.AutoGen" Version="5.1.2.3" />
     <PackageReference Include="OpenTK" Version="4.9.4" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
     <PackageReference Include="SkiaSharp" Version="3.119.2-preview.1" />
   </ItemGroup>
 

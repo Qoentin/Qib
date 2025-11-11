@@ -17,20 +17,18 @@ namespace Qib.VIDEO
 
         public VideoTimeline(string VideoPath) {
             V = new(VideoPath);
-            VT = new(V.CodecParameters->width, V.CodecParameters->height);
-            Width = V.CodecParameters->width;
-            Height = V.CodecParameters->height;
+            VT = new(V.VideoCodecParameters->width, V.VideoCodecParameters->height);
+            Width = V.VideoCodecParameters->width;
+            Height = V.VideoCodecParameters->height;
 
             AVRational RFrameRate = V.VideoStream->r_frame_rate;
             Framemark = 1e9 / (RFrameRate.num / (double)RFrameRate.den);
-
-            Console.WriteLine(RFrameRate.num / (double)RFrameRate.den);
 
             T = new(Timeline);
             T.Start();
         }
 
-        bool FrameHot = false;
+        private bool FrameHot = false;
         private bool Flash = false;
 
         public void PollAndFire() {
@@ -51,15 +49,13 @@ namespace Qib.VIDEO
                // double GNFS = 0, GNFE = 0;
 
                 while (SW.Elapsed.TotalNanoseconds < Target) {
-                    //Draw as much as possible??
-                    //Thread.SpinWait(10);
                     if ( !FrameHot ) {
                         //GNFS = SW.Elapsed.TotalNanoseconds;
 
                         AVFrame* FFmpegFrame = V.GetNextFrame();
 
                         if (FFmpegFrame == (AVFrame*)0) {
-                            goto Stop;
+                            return;
                         }
 
                         AVFrameDecoder.WriteYUVasRGBtoWriteLocation_Vec128((byte*)VT.PixelBufferPointer, FFmpegFrame, Width, Height);
@@ -76,9 +72,6 @@ namespace Qib.VIDEO
                 //Console.WriteLine($"GNF Time: {(GNFE - GNFS) / 1e6}ms");
                 Flash = true;
             }
-
-            Stop:
-            return;
         }
     }
 }

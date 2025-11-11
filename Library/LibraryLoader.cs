@@ -31,7 +31,7 @@ namespace Qib.LIBRARY
         }
 
         public static Library Load(string FromPath) {
-            var TriagedPaths = Triage.Videos(Directory.GetFiles(FromPath, "*", SearchOption.AllDirectories)).Skip(0).Take(20)
+            var TriagedPaths = Triage.Videos(Directory.GetFiles(FromPath, "*", SearchOption.AllDirectories)).Skip(0).Take(20).Where(X => X.Item2.Contains("Co"))
                .ToArray();
             Library L = new(TriagedPaths.Length);
 

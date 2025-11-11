@@ -1,4 +1,5 @@
 ﻿using FFmpeg.AutoGen;
+using OpenTK.Mathematics;
 using System.Runtime.Intrinsics;
 
 
@@ -7,9 +8,7 @@ namespace Qib.VIDEO
     public static unsafe class AVFrameDecoder
     {
         //Obsolete
-        /*private static void WriteYUVasRGBtoWriteLocation( byte* WriteLocation, AVFrame* Frame, int TWidth, int THeight ) {
-            Stopwatch SW = Stopwatch.StartNew();
-
+        public static void WriteYUVasRGBtoWriteLocation_Safe( Span<byte> WriteLocation, AVFrame* Frame, int TWidth, int THeight ) {
             int Width = Frame->width;
             int Height = Frame->height;
             int Scale = (int)Math.Floor((float)(Width) / TWidth);
@@ -17,12 +16,22 @@ namespace Qib.VIDEO
             int YBorder = (Height % THeight == 0) ? 0 : Scale;
             int LineByteCount = 3 * (Width / Scale);
 
-            Parallel.For(0, (Height - YBorder) / Scale, Line => {
+            int requiredBytes = ((Height - YBorder) / Scale) * LineByteCount;
+            if ( WriteLocation.Length < requiredBytes )
+                throw new ArgumentException("WriteLocation too small, nya!");
+
+            Matrix3 YUVtoRGB = new(
+                1, 0, 1.4f,
+                1, -0.343f, -0.711f,
+                1, 1.765f, 0
+            );
+
+            for ( int Line = 0; Line < (Height - YBorder) / Scale; Line++ ) {
                 int y = Line * Scale;
 
-                byte* LumaLine = (Frame->data[0] + y * Frame->linesize[0]);
-                byte* ChromaULine = (Frame->data[1] + (y / 2) * Frame->linesize[1]);
-                byte* ChromaVLine = (Frame->data[2] + (y / 2) * Frame->linesize[2]);
+                byte* LumaLine = checked(Frame->data[0] + y * Frame->linesize[0]);
+                byte* ChromaULine = checked(Frame->data[1] + (y / 2) * Frame->linesize[1]);
+                byte* ChromaVLine = checked(Frame->data[2] + (y / 2) * Frame->linesize[2]);
 
                 int LineStart = Line * LineByteCount;
                 int LineCounter = 0;
@@ -38,7 +47,7 @@ namespace Qib.VIDEO
                     YUV.Y = (RU - 128f);
                     YUV.Z = (RV - 128f);
 
-                    Vector3 RGB = YUVtoRGB_BT709 * YUV;
+                    Vector3 RGB = YUVtoRGB * YUV;
                     if ( RGB.X < 0 ) RGB.X = 0;
                     if ( RGB.X > 255 ) RGB.X = 255;
                     if ( RGB.Y > 255 ) RGB.Y = 255;
@@ -48,13 +57,12 @@ namespace Qib.VIDEO
 
                     if ( RGB.Y > 250 ) Console.WriteLine($"{YUV} -> {RGB}");
 
-
                     WriteLocation[LineStart + LineCounter++] = (byte)RGB.X;
                     WriteLocation[LineStart + LineCounter++] = (byte)RGB.Y;
                     WriteLocation[LineStart + LineCounter++] = (byte)RGB.Z;
                 }
-            });
-        }*/
+            }
+        }
 
         private static readonly Vector128<float> v0f = Vector128.Create(0f);
         private static readonly Vector128<float> v128f = Vector128.Create(128f);

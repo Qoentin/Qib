@@ -16,6 +16,7 @@ using static OpenTK.Windowing.GraphicsLibraryFramework.Keys;
 using OpenTK.Graphics.OpenGL4;
 using Qib.CONSTITUANTS;
 using OpenTK.Mathematics;
+using Qib.AUDIO;
 
 namespace Qib
 {
@@ -25,6 +26,21 @@ namespace Qib
 
         static void Main(string[] args)
         {
+            //int sampleFreq = 44100;
+            //double dt = 2 * Math.PI / sampleFreq;
+            //double amp = 0.5;
+
+            //int freq = 440;
+            //var dataCount = sampleFreq / freq;
+
+            //var sinData = new short[dataCount];
+            //for ( int i = 0; i < dataCount; ++i ) {
+            //    sinData[i] = (short)(amp * short.MaxValue * Math.Sin(i * dt * freq));
+            //}
+
+            //AudioOutput.Play(sinData);
+            //return;
+
             AnonymousVideo.InitFFmpeg(@"C:\FFmpeg DLLs");
 
             Window MainWindow = GLFW.CreateWindow("Test", 240, 135, 1440, 810);
@@ -46,24 +62,24 @@ namespace Qib
             TD.RefreshLayout();
             Objects.Add(TD);
 
-            Viewer V = new(L, -4);
-            V.Transform.Scale = new Vector3(1.7777f, 1, 0) * 0.8f;
+            //Viewer V = new(L, -4);
+            //V.Transform.Scale = new Vector3(1.7777f, 1, 0) * 0.8f;
 
-            Objects.Add(V);
+            //Objects.Add(V);
 
             Random R = new();
 
-            VideoTimeline VT = null;
+            FINALAUDIOISWEAR VT = null;
 
             while (!GLFW.ShouldClose()) {
                 MainRenderer.Clear();
 
                 if ( Input.IsKeyDown(Space) )
-                    V.DEBUGONE();
+                    //V.DEBUGONE();
 
                 if ( Input.IsKeyClicked(M)) {
-                    V.DEBUGTWO();
-                    Console.WriteLine($"Draw Avg {V.VSP.DrawTS / V.VSP.DrawTC}, Up Avg {V.VSP.UpTS / V.VSP.UpTC}");
+                   // V.DEBUGTWO();
+                   // Console.WriteLine($"Draw Avg {V.VSP.DrawTS / V.VSP.DrawTC}, Up Avg {V.VSP.UpTS / V.VSP.UpTC}");
 
                 }
 
@@ -76,14 +92,14 @@ namespace Qib
                     if ( i == -1 ) return;
 
                     PrintL(L[i].Path);
-                    V.Set(i);
+                    //V.Set(i);
                     L[i].Tags.Add(R.Next().ToString());
                 }
                 if ( Input.IsButtonClicked(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Right) ) {
-                    VT = new VideoTimeline(L[TD.GetHoveredItemIndex()].Path);
-                    V.UniformUpload = () => {
-                        GL.BindTexture(TextureTarget.Texture2D, VT.VT.Handle);
-                    };
+                    VT = new FINALAUDIOISWEAR(L[TD.GetHoveredItemIndex()].Path, 5);
+                    //V.UniformUpload = () => {
+                    //    GL.BindTexture(TextureTarget.Texture2D, VT.VT.Handle);
+                    //};
                     //int i = TD.GetHoveredItemIndex();
                     //if ( i == -1 ) return;
                     ////PrintL(i);
@@ -92,7 +108,7 @@ namespace Qib
                 }
 
                 if (VT is not null) {
-                    VT.PollAndFire();
+                    //VT.PollAndFire();
                 }
 
                 foreach (Object Obj in Objects) {
