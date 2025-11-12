@@ -69,7 +69,7 @@ namespace Qib
 
             Random R = new();
 
-            FINALAUDIOISWEAR VT;
+            AudioTimeline VT;
 
             while (!GLFW.ShouldClose()) {
                 MainRenderer.Clear();
@@ -96,7 +96,7 @@ namespace Qib
                     //L[i].Tags.Add(R.Next().ToString());
                 }
                 if ( Input.IsButtonClicked(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Right) ) {
-                    VT = new FINALAUDIOISWEAR(L[TD.GetHoveredItemIndex()].Path, 5);
+                    VT = new AudioTimeline(L[TD.GetHoveredItemIndex()].Path, 5);
                     //V.UniformUpload = () => {
                     //    GL.BindTexture(TextureTarget.Texture2D, VT.VT.Handle);
                     //};

@@ -4,20 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Qib.VIDEO {
-    static class QUEUEDAUDIOSOURCE {
-
-        public static void chkerr() {
-            var err = AL.GetError();
-            if ( err != ALError.NoError ) {
-                Console.WriteLine($"OpenAL error: {AL.GetErrorString(err)}");
-            }
-
-            var err2 = ALC.GetError(AudioOutput.Device);
-            if ( err2 != AlcError.NoError ) {
-                Console.WriteLine($"OpenAL context error: {AL.GetErrorString(err)}");
-            }
-        }
+namespace Qib.EXTENSIONS {
+    static class OpenALSourceExtensions {
 
         public static bool IsPlaying(this int Source) {
             return (ALSourceState)AL.GetSource(Source, ALGetSourcei.SourceState) == ALSourceState.Playing;
@@ -44,6 +32,20 @@ namespace Qib.VIDEO {
             }
 
             return false;
+        }
+
+        public static void DeleteQueuedBuffers(this int Source) {
+            int Processed = AL.GetSource(Source, ALGetSourcei.BuffersProcessed);
+
+            while ( Processed > 0 ) {
+                int Buffer = AL.SourceUnqueueBuffer(Source);
+
+                AL.DeleteBuffer(Buffer);
+            }
+        }
+
+        public static void Delete(this int Source) {
+            AL.DeleteSource(Source);
         }
     }
 }

@@ -1,87 +1,143 @@
 ﻿using FFmpeg.AutoGen;
-using static FFmpeg.AutoGen.ffmpeg;
-using System.Diagnostics;
+using OpenTK.Audio.OpenAL;
 using Qib.AUDIO;
-using Qib.VIDEO;
+using Qib.EXTENSIONS;
+using System;
+using System.Diagnostics;
+using static Qib.EXTENSIONS.OpenALSourceExtensions;
 
-
-namespace Qib.VIDEO {
-
-    unsafe class AudioTimeline {
+namespace Qib.VIDEO
+{
+    unsafe class AudioTimeline
+    {
         Video V;
         Thread T;
         Stopwatch SW;
 
+        int Source;
+
+        Stack<byte[]> ColdBuffers;
+        Queue<byte[]> HotBuffers;
+
+        #region Details
+        int BufferCount;
+        int SampleRate;
+        int FrameBytes;
+        int BufferBytes;
         double Framemark;
-        int SR;
+        #endregion
 
-        int PacketSize;
+        public bool FillBuffer( byte[] Buffer ) {
+            int Cursor = 0;
 
-        public AudioTimeline( string VideoPath ) {
-            V = new(VideoPath);
+            while ( Cursor < BufferBytes ) {
+                AVFrame* FFmpegFrame = V.GetNextAudioFrame();
+                if ( FFmpegFrame == (AVFrame*)0 ) goto EOFCase;
 
-            SR = V.AudioCodecContext->sample_rate;
-            //Framemark = 1e9 / ((double)V.AudioCodecContext->sample_rate / V.AudioCodecContext->frame_size);
-            double RFPS = Math.Ceiling((double)V.AudioCodecContext->sample_rate / V.AudioCodecContext->frame_size);
-            Framemark = 1e9;
-            PacketSize = (int)(RFPS * V.AudioCodecContext->frame_size * 2 * 2);
+                AudioFrameDecoder.DecodeToBuffer(FFmpegFrame, Buffer, Cursor);
+
+                Cursor += FrameBytes;
+            }
+
+            return true;
+
+        EOFCase:
+            Array.Clear(Buffer, Cursor, BufferBytes - Cursor);
+            return false;
+        }
+
+        public void InitBuffers(out int[] BufferHandles) {
+            BufferHandles = AudioOutput.GenBuffers(BufferCount);
+
+            for ( int i = 0; i < BufferCount; i++ ) {
+                byte[] Buffer = new byte[BufferBytes];
+
+                FillBuffer(Buffer);
+
+                AL.BufferData(BufferHandles[i], ALFormat.Stereo16, Buffer, SampleRate);
+
+                ColdBuffers.Push(Buffer);
+            }
+        }
+
+        public void Go() {
+            ColdBuffers = new();
+            HotBuffers = new();
+
+            InitBuffers(out int[] BufferHandles);
+
+            Source = AudioOutput.GenerateSource();
+            AL.SourceQueueBuffers(Source, BufferHandles);
+            Source.Play();
+
             T = new(Timeline);
             T.Start();
         }
 
-        private bool FrameHot = false;
-        private bool Flash = false;
+        public void Stop() {
+            Source.DeleteQueuedBuffers();
+            Source.Delete();
+
+            ColdBuffers.Clear();
+            HotBuffers.Clear();
+        }
+
+        public AudioTimeline(string VideoPath, int BufferCount) {
+            V = new(VideoPath);
+
+            this.BufferCount = BufferCount;
+            SampleRate = V.AudioCodecContext->sample_rate;
+
+            int FrameSize = V.AudioCodecContext->frame_size;
+            int FramesPerPacket = (int)Math.Ceiling((double)SampleRate / FrameSize);
+            int Channels = V.AudioCodecContext->channels; //Update ffmpeg
+            int ByteDepth = 2;
+
+            FrameBytes = FrameSize * Channels * ByteDepth;
+            BufferBytes = FrameBytes * FramesPerPacket;
+            Framemark = (1d / SampleRate) * (FramesPerPacket * FrameSize);
+
+            Go();
+        }
 
         public void Timeline() {
             SW = Stopwatch.StartNew();
             double Target = SW.Elapsed.TotalNanoseconds + Framemark;
 
-            bool SampleFlip = false;
-            //byte[] Sample = null;
-            byte[] Sample2 = new byte[PacketSize];
-            int WriteCursor = 0;
+            bool EOF = false;
 
             while ( true ) {
-                // double GNFS = 0, GNFE = 0;
 
-                while ( SW.Elapsed.TotalNanoseconds < Target ) {
-                    if ( !FrameHot ) {
-                        //GNFS = SW.Elapsed.TotalNanoseconds;
+                while ( SW.Elapsed.TotalNanoseconds < Target && !EOF ) {
 
-                        AVFrame* FFmpegFrame = V.GetNextAudioFrame();
-                        if ( FFmpegFrame == (AVFrame*)0 ) {
-                            return;
-                        }
+                    if ( ColdBuffers.Count > 0 ) {
+                        byte[] BufferToFill = ColdBuffers.Pop();
 
-                        AudioFrameDecoder.DecodeToBuffer(FFmpegFrame, Sample2, WriteCursor);
-                        WriteCursor += V.AudioCodecContext->frame_size * 2 * 2;
-                        if (WriteCursor >= PacketSize) {
-                            FrameHot = true;
+                        EOF = !FillBuffer(BufferToFill);
 
-                        }
+                        HotBuffers.Enqueue(BufferToFill);
 
-
-                        //Sample = AudioFrameDecoder.DecodeToBuffer(FFmpegFrame);
-
-
-                        //FrameHot = true;
-                        // GNFE = SW.Elapsed.TotalNanoseconds;
+                        Console.WriteLine($"Cold buffers: {ColdBuffers.Count}, Hot buffers: {HotBuffers.Count}");
                     }
                     else Thread.SpinWait(10);
                 }
 
                 Target = SW.Elapsed.TotalNanoseconds + Framemark;
 
-                //Console.WriteLine($"GNF Time: {(GNFE - GNFS) / 1e6}ms");
-                //AudioOutput.Play(
-                //    Sample2,
-                //    SR
-                //);
-                FrameHot = false;
+                while ( HotBuffers.Count > 0 ) {
+                    byte[] BufferToConsume = HotBuffers.Peek();
 
-                //Console.WriteLine($"Flash");
-                Flash = true;
+                    if ( Source.TryEnqueue(BufferToConsume, SampleRate) ) {
+                        ColdBuffers.Push(HotBuffers.Dequeue());
+                        if ( EOF && HotBuffers.Count == 0 ) goto End;
+                    }
+                    else break;
+                }
             }
+
+            End:
+            while ( Source.IsPlaying() ) Thread.SpinWait(10);
+            Stop();
         }
     }
 }

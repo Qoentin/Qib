@@ -1,5 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
-using Qib.Extensions;
+using Qib.EXTENSIONS;
 using System.Runtime.InteropServices;
 
 namespace Qib.OPENGL

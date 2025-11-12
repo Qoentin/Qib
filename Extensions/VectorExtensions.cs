@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Qib.Extensions
+namespace Qib.EXTENSIONS
 {
     public static class VectorExtensions
     {

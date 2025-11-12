@@ -1,4 +1,4 @@
-﻿using Qib.Extensions;
+﻿using Qib.EXTENSIONS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
