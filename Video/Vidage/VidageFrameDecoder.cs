@@ -1,11 +1,12 @@
 ﻿using FFmpeg.AutoGen;
 using OpenTK.Mathematics;
+using Qib.VIDEO.VIDAGE;
 using System.Runtime.Intrinsics;
 
 
-namespace Qib.VIDEO
+namespace Qib.VIDEO.VIDAGE
 {
-    public static unsafe class AVFrameDecoder
+    public static unsafe class VidageFrameDecoder
     {
         //Obsolete
         public static void WriteYUVasRGBtoWriteLocation_Safe( Span<byte> WriteLocation, AVFrame* Frame, int TWidth, int THeight ) {

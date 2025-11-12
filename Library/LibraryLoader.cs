@@ -1,6 +1,6 @@
 ﻿using Qib.Helpers;
 using Qib.TEXTURES;
-using Qib.VIDEO;
+using Qib.VIDEO.VIDAGE;
 using System.Collections.Concurrent;
 
 namespace Qib.LIBRARY
@@ -31,7 +31,7 @@ namespace Qib.LIBRARY
         }
 
         public static Library Load(string FromPath) {
-            var TriagedPaths = Triage.Videos(Directory.GetFiles(FromPath, "*", SearchOption.AllDirectories)).Skip(0).Take(20).Where(X => X.Item2.Contains("Co"))
+            var TriagedPaths = Triage.Videos(Directory.GetFiles(FromPath, "*", SearchOption.AllDirectories)).Skip(0).Take(20)
                .ToArray();
             Library L = new(TriagedPaths.Length);
 
@@ -57,7 +57,7 @@ namespace Qib.LIBRARY
                 case MediaType.Image:
                     return ImageHelper.GetImageDimensions(MediaInfo.Path);
                 case MediaType.Video:
-                    return AnonymousVideo.GetVideoDimensions(MediaInfo.Path);
+                    return AnonymousVidage.GetVideoDimensions(MediaInfo.Path);
                 default:
                     throw new Exception("Meep");
             }

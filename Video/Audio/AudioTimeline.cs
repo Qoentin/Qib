@@ -6,7 +6,7 @@ using System;
 using System.Diagnostics;
 using static Qib.EXTENSIONS.OpenALSourceExtensions;
 
-namespace Qib.VIDEO
+namespace Qib.VIDEO.AUDIO
 {
     unsafe class AudioTimeline
     {
@@ -116,8 +116,6 @@ namespace Qib.VIDEO
                         EOF = !FillBuffer(BufferToFill);
 
                         HotBuffers.Enqueue(BufferToFill);
-
-                        Console.WriteLine($"Cold buffers: {ColdBuffers.Count}, Hot buffers: {HotBuffers.Count}");
                     }
                     else Thread.SpinWait(10);
                 }

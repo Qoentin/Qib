@@ -1,9 +1,9 @@
 ﻿using FFmpeg.AutoGen;
 using static FFmpeg.AutoGen.ffmpeg;
 
-namespace Qib.VIDEO
+namespace Qib.VIDEO.VIDAGE
 {
-    public static unsafe class AnonymousVideo
+    public static unsafe class AnonymousVidage
     {
         public static bool FFmpegReady = false;
 

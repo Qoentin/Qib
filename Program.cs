@@ -9,7 +9,6 @@ using Qib.LIBRARY;
 using Object = Qib.CONSTITUANTS.Object;
 using Qib.Objects.Display;
 using Qib.Objects.Display.DisplayStrategies;
-using Qib.VIDEO;
 using Qib.Effects;
 using Qib.Objects;
 using static OpenTK.Windowing.GraphicsLibraryFramework.Keys;
@@ -17,6 +16,8 @@ using OpenTK.Graphics.OpenGL4;
 using Qib.CONSTITUANTS;
 using OpenTK.Mathematics;
 using Qib.AUDIO;
+using Qib.VIDEO.AUDIO;
+using Qib.VIDEO.VIDAGE;
 
 namespace Qib
 {
@@ -41,7 +42,7 @@ namespace Qib
             //AudioOutput.Play(sinData);
             //return;
 
-            AnonymousVideo.InitFFmpeg(@"C:\FFmpeg DLLs");
+            AnonymousVidage.InitFFmpeg(@"C:\FFmpeg DLLs");
 
             Window MainWindow = GLFW.CreateWindow("Test", 240, 135, 1440, 810);
             Camera MainCamera = new(MainWindow, ProjectionType.Perspective);
@@ -96,7 +97,7 @@ namespace Qib
                     //L[i].Tags.Add(R.Next().ToString());
                 }
                 if ( Input.IsButtonClicked(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Right) ) {
-                    VT = new AudioTimeline(L[TD.GetHoveredItemIndex()].Path, 5);
+                    VT = new AudioTimeline(L[TD.GetHoveredItemIndex()].Path, 2);
                     //V.UniformUpload = () => {
                     //    GL.BindTexture(TextureTarget.Texture2D, VT.VT.Handle);
                     //};

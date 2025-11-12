@@ -4,7 +4,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 
-namespace Qib.VIDEO
+namespace Qib.VIDEO.AUDIO
 {
     public static unsafe class AudioFrameDecoder
     {

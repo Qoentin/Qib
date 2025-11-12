@@ -67,7 +67,7 @@ namespace Qib.VIDEO
             }
         }
 
-        public AVFrame* GetNextFrame( ) {
+        public AVFrame* GetNextVidageFrame( ) {
             AVFrame* OutFrame = (AVFrame*)0;
 
             AVFrame* Frame = av_frame_alloc();

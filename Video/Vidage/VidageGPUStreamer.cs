@@ -7,14 +7,14 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Qib.VIDEO
+namespace Qib.VIDEO.VIDAGE
 {
     enum PBOStatus {
         Hot,
         Filled
     }
 
-    class VIdeoStreamingPenis
+    class VidageGPUStreamer
     {
         int Width, Height;
         int Frames;
@@ -60,7 +60,7 @@ namespace Qib.VIDEO
         }
 
 
-        public VIdeoStreamingPenis(int Width, int Height) {
+        public VidageGPUStreamer(int Width, int Height) {
             //if ( Frames < 2 ) throw new Exception("Need more than 2 frames");
 
             this.Width = Width;

@@ -2,10 +2,11 @@
 using Qib.CONSTITUANTS;
 using Qib.LIBRARY;
 using Qib.TEXTURES;
-using Qib.VIDEO;
 using Object = Qib.CONSTITUANTS.Object;
 using OpenTK.Graphics.OpenGL4;
 using System.Reflection.Metadata;
+using Qib.VIDEO;
+using Qib.VIDEO.VIDAGE;
 
 
 namespace Qib.Objects
@@ -16,7 +17,7 @@ namespace Qib.Objects
         int Selected = -1;
 
         Video SelectedVideo;
-        public VIdeoStreamingPenis VSP;
+        public VidageGPUStreamer VSP;
         int ActiveFrame;
         IntPtr ActiveFramePtr;
 
@@ -52,7 +53,7 @@ namespace Qib.Objects
         private void SetVideo() {
             SelectedVideo = new(L[Selected].Path);
 
-            VSP = new VIdeoStreamingPenis(L[Selected].Width, L[Selected].Height);
+            VSP = new VidageGPUStreamer(L[Selected].Width, L[Selected].Height);
 
             Transform.Scale = new Vector3(L.AspectOfElement(Selected), 1, 0) * 0.8f;
         }

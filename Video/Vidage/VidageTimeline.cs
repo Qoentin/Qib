@@ -1,21 +1,22 @@
 ﻿using FFmpeg.AutoGen;
+using Qib.VIDEO.VIDAGE;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using static FFmpeg.AutoGen.ffmpeg;
 
-namespace Qib.VIDEO
+namespace Qib.VIDEO.VIDAGE
 {
-    unsafe class VideoTimeline
+    unsafe class VidageTimeline
     {
         Thread T;
         Stopwatch SW;
         Video V;
-        public VIdeoStreamingPenis VT;
+        public VidageGPUStreamer VT;
         double Framemark;
 
         int Width, Height;
 
-        public VideoTimeline(string VideoPath) {
+        public VidageTimeline(string VideoPath) {
             V = new(VideoPath);
             VT = new(V.VideoCodecParameters->width, V.VideoCodecParameters->height);
             Width = V.VideoCodecParameters->width;
@@ -52,13 +53,13 @@ namespace Qib.VIDEO
                     if ( !FrameHot ) {
                         //GNFS = SW.Elapsed.TotalNanoseconds;
 
-                        AVFrame* FFmpegFrame = V.GetNextFrame();
+                        AVFrame* FFmpegFrame = V.GetNextVidageFrame();
 
                         if (FFmpegFrame == (AVFrame*)0) {
                             return;
                         }
 
-                        AVFrameDecoder.WriteYUVasRGBtoWriteLocation_Vec128((byte*)VT.PixelBufferPointer, FFmpegFrame, Width, Height);
+                        VidageFrameDecoder.WriteYUVasRGBtoWriteLocation_Vec128((byte*)VT.PixelBufferPointer, FFmpegFrame, Width, Height);
                         av_frame_free(&FFmpegFrame);
 
                         FrameHot = true;

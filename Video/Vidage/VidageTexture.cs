@@ -2,9 +2,9 @@
 using Qib.TEXTURES;
 using System.Reflection.Metadata;
 
-namespace Qib.VIDEO
+namespace Qib.VIDEO.VIDAGE
 {
-    class VideoTexture : ITexture
+    class VidageTexture : ITexture
     {
         public int PixelBufferHandle;
         public IntPtr PixelBufferPtr;
@@ -15,7 +15,7 @@ namespace Qib.VIDEO
 
         public int Width, Height;
 
-        public VideoTexture(int Width, int Height) {
+        public VidageTexture(int Width, int Height) {
             this.Width = Width;
             this.Height = Height;
 
