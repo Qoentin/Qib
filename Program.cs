@@ -63,14 +63,14 @@ namespace Qib
             TD.RefreshLayout();
             Objects.Add(TD);
 
-            //Viewer V = new(L, -4);
-            //V.Transform.Scale = new Vector3(1.7777f, 1, 0) * 0.8f;
+            Viewer V = new(L, -4);
+            V.Transform.Scale = new Vector3(1.7777f, 1, 0) * 0.8f;
 
-            //Objects.Add(V);
+            Objects.Add(V);
 
             Random R = new();
 
-            AudioTimeline VT;
+            VIDEO.Video Vid = null;
 
             while (!GLFW.ShouldClose()) {
                 MainRenderer.Clear();
@@ -97,20 +97,26 @@ namespace Qib
                     //L[i].Tags.Add(R.Next().ToString());
                 }
                 if ( Input.IsButtonClicked(OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Right) ) {
-                    VT = new AudioTimeline(L[TD.GetHoveredItemIndex()].Path, 2);
-                    //V.UniformUpload = () => {
-                    //    GL.BindTexture(TextureTarget.Texture2D, VT.VT.Handle);
-                    //};
+                    //VT = new AudioTimeline(L[TD.GetHoveredItemIndex()].Path, 2);
+                    Vid = new(L[TD.GetHoveredItemIndex()].Path);
+
+                    V.Transform.Scale = new Vector3(L.AspectOfElement(TD.GetHoveredItemIndex()), 1, 0) * 0.8f;
+
+                    V.UniformUpload = () => {
+                        GL.BindTexture(TextureTarget.Texture2D, Vid.TextureHandle);
+                    };
+
+                    Vid.Play();
                     //int i = TD.GetHoveredItemIndex();
                     //if ( i == -1 ) return;
                     ////PrintL(i);
-                    ////V.Set(i);
+                    //V.Set(i);
                     //L[i].Tags.Print();
                 }
 
-                //if (VT is not null) {
-                //    //VT.PollAndFire();
-                //}
+                if (Vid is not null) {
+                    Vid.VideoImageTimeline.PollAndFire();
+                }
 
                 foreach (Object Obj in Objects) {
                     Obj.UpdateEffects();

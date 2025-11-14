@@ -1,13 +1,16 @@
 ﻿using FFmpeg.AutoGen;
+using Qib.VIDEO.AUDIO;
+using Qib.VIDEO.VIDAGE;
+using System.Diagnostics;
+using System.Net.Sockets;
+using System.Xml.Linq;
 using static FFmpeg.AutoGen.ffmpeg;
 
 namespace Qib.VIDEO
 {
-    unsafe struct Video
+    unsafe class Video
     {
-        public AVFrame* FFmpegFrame;
-        public IntPtr GPUFrame;
-
+        #region Context
         public AVFormatContext* FmtContext;
 
         public AVCodec* VideoCodec;
@@ -17,54 +20,112 @@ namespace Qib.VIDEO
         public AVCodec* AudioCodec;
         public AVCodecContext* AudioCodecContext;
         public AVCodecParameters* AudioCodecParameters;
+        #endregion
 
+        #region Streaming Context
         public AVStream* VideoStream;
         public int VideoStreamIndex;
 
         public AVStream* AudioStream;
         public int AudioStreamIndex;
+        #endregion
 
-        public Video(string Path) {
+        #region Streaming
+        public Stopwatch Timer;
+        public VidageTimeline VideoImageTimeline;
+        public AudioTimeline AudioTimeline;
+
+        public int TextureHandle { get { return VideoImageTimeline.VT.Handle; } }
+        #endregion
+
+        public void LoadContexts(string Path) {
             FmtContext = avformat_alloc_context();
 
             fixed ( AVFormatContext** FmtContextPtr = &FmtContext ) {
                 if ( avformat_open_input(FmtContextPtr, Path, null, null) == 0 && avformat_find_stream_info(FmtContext, null) >= 0 )
-                    for ( int i = 0; i < FmtContext->nb_streams; i++ ) {
-                        AVCodecParameters* CodecParams = FmtContext->streams[i]->codecpar;
+                for ( int i = 0; i < FmtContext->nb_streams; i++ ) {
 
-                        if ( CodecParams->codec_type == AVMediaType.AVMEDIA_TYPE_VIDEO ) {
-                            VideoCodecParameters = CodecParams;
-                            VideoStream = FmtContext->streams[i];
-                            VideoStreamIndex = i;
+                    AVCodecParameters* CodecParams = FmtContext->streams[i]->codecpar;
 
-                            VideoCodec = avcodec_find_decoder(VideoCodecParameters->codec_id);
-                            if ( VideoCodec is not null ) {
-                                VideoCodecContext = avcodec_alloc_context3(VideoCodec);
-                                avcodec_parameters_to_context(VideoCodecContext, VideoCodecParameters);
+                    if ( CodecParams->codec_type == AVMediaType.AVMEDIA_TYPE_VIDEO ) {
+                        VideoCodecParameters = CodecParams;
+                        VideoStream = FmtContext->streams[i];
+                        VideoStreamIndex = i;
 
-                                if (avcodec_open2(VideoCodecContext, VideoCodec, null) < 0 ) {
-                                    throw new Exception("Couldn't open video at " + Path);
-                                }
-                            }
-                        }
+                        VideoCodec = avcodec_find_decoder(VideoCodecParameters->codec_id);
+                        if ( VideoCodec is not null ) {
+                            VideoCodecContext = avcodec_alloc_context3(VideoCodec);
+                            avcodec_parameters_to_context(VideoCodecContext, VideoCodecParameters);
 
-                        if ( CodecParams->codec_type == AVMediaType.AVMEDIA_TYPE_AUDIO ) {
-                            AudioCodecParameters = CodecParams;
-                            AudioStream = FmtContext->streams[i];
-                            AudioStreamIndex = i;
-
-                            AudioCodec = avcodec_find_decoder(AudioCodecParameters->codec_id);
-                            if ( AudioCodec is not null ) {
-                                AudioCodecContext = avcodec_alloc_context3(AudioCodec);
-                                avcodec_parameters_to_context(AudioCodecContext, AudioCodecParameters);
-
-                                if ( avcodec_open2(AudioCodecContext, AudioCodec, null) < 0 ) {
-                                    throw new Exception("Couldn't open video (audio) at " + Path);
-                                }
+                            if ( avcodec_open2(VideoCodecContext, VideoCodec, null) < 0 ) {
+                                throw new Exception("Couldn't open video at " + Path);
                             }
                         }
                     }
+
+                    if ( CodecParams->codec_type == AVMediaType.AVMEDIA_TYPE_AUDIO ) {
+                        AudioCodecParameters = CodecParams;
+                        AudioStream = FmtContext->streams[i];
+                        AudioStreamIndex = i;
+
+                        AudioCodec = avcodec_find_decoder(AudioCodecParameters->codec_id);
+                        if ( AudioCodec is not null ) {
+                            AudioCodecContext = avcodec_alloc_context3(AudioCodec);
+                            avcodec_parameters_to_context(AudioCodecContext, AudioCodecParameters);
+
+                            if ( avcodec_open2(AudioCodecContext, AudioCodec, null) < 0 ) {
+                                throw new Exception("Couldn't open video (audio) at " + Path);
+                            }
+                        }
+                    }
+                }
             }
+        }
+
+        public void LoadTimelines(string Path) {
+            VideoImageTimeline = new(this);
+            //AudioTimeline = new(this, 2);
+        }
+
+        public Video(string Path) {
+            LoadContexts(Path);
+
+            LoadTimelines(Path);
+        }
+
+        public void Play() {
+            Timer = Stopwatch.StartNew();
+            VideoImageTimeline.Play();
+            //AudioTimeline.Play();
+        }
+
+        //Todo: queue up packets from the wrong stream.
+
+        public AVFrame* Buffer() {
+            AVFrame* OutFrame = (AVFrame*)0;
+
+            AVPacket* Packet = av_packet_alloc();
+
+            int Error;
+
+            do {
+                do {
+                    av_packet_unref(Packet);
+                    Error = av_read_frame(FmtContext, Packet);
+
+                    if ( Error == AVERROR_EOF ) goto Exit;
+
+                } while ( Packet->stream_index != VideoStreamIndex );
+
+                avcodec_send_packet(VideoCodecContext, Packet);
+
+                OutFrame = av_frame_alloc();
+                Error = avcodec_receive_frame(VideoCodecContext, OutFrame);
+            } while ( Error == AVERROR(EAGAIN) );
+
+        Exit:
+            av_packet_free(&Packet);
+            return OutFrame;
         }
 
         public AVFrame* GetNextVidageFrame( ) {

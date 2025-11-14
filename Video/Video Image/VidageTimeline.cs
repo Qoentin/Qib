@@ -8,23 +8,27 @@ namespace Qib.VIDEO.VIDAGE
 {
     unsafe class VidageTimeline
     {
-        Thread T;
-        Stopwatch SW;
         Video V;
+        Thread T;
         public VidageGPUStreamer VT;
         double Framemark;
 
         int Width, Height;
 
-        public VidageTimeline(string VideoPath) {
-            V = new(VideoPath);
+        public VidageTimeline(Video Parent) {
+            V = Parent;
+
             VT = new(V.VideoCodecParameters->width, V.VideoCodecParameters->height);
             Width = V.VideoCodecParameters->width;
             Height = V.VideoCodecParameters->height;
 
             AVRational RFrameRate = V.VideoStream->r_frame_rate;
-            Framemark = 1e9 / (RFrameRate.num / (double)RFrameRate.den);
+            //Framemark = 1e9 / (RFrameRate.num / (double)RFrameRate.den);
+            Framemark = (RFrameRate.den * 1e9 / RFrameRate.num);
 
+        }
+
+        public void Play() {
             T = new(Timeline);
             T.Start();
         }
@@ -42,18 +46,16 @@ namespace Qib.VIDEO.VIDAGE
 
 
         public void Timeline() {
-            SW = Stopwatch.StartNew();
-            double Target = SW.Elapsed.TotalNanoseconds + Framemark;
-
+            double Target = V.Timer.Elapsed.TotalNanoseconds + Framemark;
 
             while (true) {
                // double GNFS = 0, GNFE = 0;
 
-                while (SW.Elapsed.TotalNanoseconds < Target) {
+                while (V.Timer.Elapsed.TotalNanoseconds < Target) {
                     if ( !FrameHot ) {
                         //GNFS = SW.Elapsed.TotalNanoseconds;
 
-                        AVFrame* FFmpegFrame = V.GetNextVidageFrame();
+                        AVFrame* FFmpegFrame = V.Buffer();
 
                         if (FFmpegFrame == (AVFrame*)0) {
                             return;
@@ -68,7 +70,7 @@ namespace Qib.VIDEO.VIDAGE
                     else Thread.SpinWait(10);
                 }
 
-                Target = SW.Elapsed.TotalNanoseconds + Framemark;
+                Target = V.Timer.Elapsed.TotalNanoseconds + Framemark;
 
                 //Console.WriteLine($"GNF Time: {(GNFE - GNFS) / 1e6}ms");
                 Flash = true;

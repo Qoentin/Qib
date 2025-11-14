@@ -12,7 +12,6 @@ namespace Qib.VIDEO.AUDIO
     {
         Video V;
         Thread T;
-        Stopwatch SW;
 
         int Source;
 
@@ -60,7 +59,7 @@ namespace Qib.VIDEO.AUDIO
             }
         }
 
-        public void Go() {
+        public void Play() {
             ColdBuffers = new();
             HotBuffers = new();
 
@@ -82,8 +81,8 @@ namespace Qib.VIDEO.AUDIO
             HotBuffers.Clear();
         }
 
-        public AudioTimeline(string VideoPath, int BufferCount) {
-            V = new(VideoPath);
+        public AudioTimeline(Video Parent, int BufferCount) {
+            V = Parent;
 
             this.BufferCount = BufferCount;
             SampleRate = V.AudioCodecContext->sample_rate;
@@ -96,19 +95,16 @@ namespace Qib.VIDEO.AUDIO
             FrameBytes = FrameSize * Channels * ByteDepth;
             BufferBytes = FrameBytes * FramesPerPacket;
             Framemark = (1d / SampleRate) * (FramesPerPacket * FrameSize);
-
-            Go();
         }
 
         public void Timeline() {
-            SW = Stopwatch.StartNew();
-            double Target = SW.Elapsed.TotalNanoseconds + Framemark;
+            double Target = V.Timer.Elapsed.TotalNanoseconds + Framemark;
 
             bool EOF = false;
 
             while ( true ) {
 
-                while ( SW.Elapsed.TotalNanoseconds < Target && !EOF ) {
+                while ( V.Timer.Elapsed.TotalNanoseconds < Target && !EOF ) {
 
                     if ( ColdBuffers.Count > 0 ) {
                         byte[] BufferToFill = ColdBuffers.Pop();
@@ -120,7 +116,7 @@ namespace Qib.VIDEO.AUDIO
                     else Thread.SpinWait(10);
                 }
 
-                Target = SW.Elapsed.TotalNanoseconds + Framemark;
+                Target = V.Timer.Elapsed.TotalNanoseconds + Framemark;
 
                 while ( HotBuffers.Count > 0 ) {
                     byte[] BufferToConsume = HotBuffers.Peek();
