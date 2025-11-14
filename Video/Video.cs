@@ -100,9 +100,15 @@ namespace Qib.VIDEO
         }
 
         //Todo: queue up packets from the wrong stream.
+        AVFrameWrapper IncomingVFrame = new();
+        public Queue<AVFrameWrapper> BufferedVideoFrames = new();
 
-        public AVFrame* Buffer() {
-            AVFrame* OutFrame = (AVFrame*)0;
+        AVFrameWrapper IncomingAFrame = new();
+        public Queue<AVFrameWrapper> BufferedAudioFrames = new();
+
+        public bool Buffer() {
+            IncomingVFrame.AllocIfBlank();
+            IncomingAFrame.AllocIfBlank();
 
             AVPacket* Packet = av_packet_alloc();
 
@@ -113,19 +119,24 @@ namespace Qib.VIDEO
                     av_packet_unref(Packet);
                     Error = av_read_frame(FmtContext, Packet);
 
-                    if ( Error == AVERROR_EOF ) goto Exit;
+                    if ( Error == AVERROR_EOF ) goto EOF;
 
                 } while ( Packet->stream_index != VideoStreamIndex );
 
                 avcodec_send_packet(VideoCodecContext, Packet);
 
-                OutFrame = av_frame_alloc();
-                Error = avcodec_receive_frame(VideoCodecContext, OutFrame);
+                Error = avcodec_receive_frame(VideoCodecContext, IncomingVFrame);
             } while ( Error == AVERROR(EAGAIN) );
 
-        Exit:
+
             av_packet_free(&Packet);
-            return OutFrame;
+            BufferedVideoFrames.Enqueue(IncomingVFrame);
+            IncomingVFrame = new();
+            return true;
+        EOF:
+            IncomingVFrame.Free();
+            av_packet_free(&Packet);
+            return false;
         }
 
         public AVFrame* GetNextVidageFrame( ) {
@@ -219,5 +230,30 @@ namespace Qib.VIDEO
 
             return OutFrame;
         }
+    }
+
+    public unsafe struct AVFrameWrapper {
+        public bool Complete = false;
+        public AVFrame* Ptr;
+
+        public void AllocIfBlank() {
+            if (IsBlank()) {
+                Ptr = av_frame_alloc();
+            }
+        }
+
+        public void Free() {
+            if (!IsBlank()) {
+                fixed ( AVFrame** PtrLoc = &Ptr ) {
+                    av_frame_free(PtrLoc);
+                }
+            }
+        }
+
+        public bool IsBlank() => Ptr == (AVFrame*)0;
+        public AVFrameWrapper( AVFrame* Ptr ) { this.Ptr = Ptr; }
+        public AVFrameWrapper() { Ptr = (AVFrame*)0; }
+
+        public static implicit operator AVFrame* (AVFrameWrapper Wrapper) => Wrapper.Ptr;
     }
 }

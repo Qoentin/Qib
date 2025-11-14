@@ -55,11 +55,9 @@ namespace Qib.VIDEO.VIDAGE
                     if ( !FrameHot ) {
                         //GNFS = SW.Elapsed.TotalNanoseconds;
 
-                        AVFrame* FFmpegFrame = V.Buffer();
+                        if ( !V.Buffer() ) return;
 
-                        if (FFmpegFrame == (AVFrame*)0) {
-                            return;
-                        }
+                        AVFrame* FFmpegFrame = V.BufferedVideoFrames.Dequeue();
 
                         VidageFrameDecoder.WriteYUVasRGBtoWriteLocation_Vec128((byte*)VT.PixelBufferPointer, FFmpegFrame, Width, Height);
                         av_frame_free(&FFmpegFrame);
